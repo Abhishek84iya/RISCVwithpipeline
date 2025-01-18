@@ -1,0 +1,259 @@
+`timescale 1ns / 1ps
+module control_unit(input logic clk,
+                    input logic rst,
+                    input logic [6:0] opcode,
+                    input logic [2:0] func3,
+                    input logic [6:0] func7,
+                    output logic reg_write,
+                    output logic mem_read,
+                    output logic mem_write,
+                    output logic mem_to_reg,
+                    output logic alu_src,
+                    output logic [4:0] alu_op
+    );
+    //zero 00000|
+    //addi 00001|
+    //add  00010|
+    //sub  00011|
+    //or   00100|
+    //and  00101|
+    //xor  00110|
+    //sll  00111|
+    //srl  01000|
+    //sra  01001|
+    //beq  01010|
+    //bne  01011|
+    //lw   01100|
+    //sw   01101|
+    //jal  01110|
+    //mul   10001|
+    //div   10010|
+    //rem   10011|
+    //slt   10100|
+    //sltu  10101|
+                    always_comb begin
+                        if(rst)begin
+                            alu_src<=0;
+                            alu_op<=0;
+                            reg_write<=0;
+                            mem_read<=0;
+                            mem_write<=0;
+                            mem_to_reg<=0;
+                        end
+                        else begin
+                            case (opcode)
+                                7'b0110011 : begin//r
+                                    if(func3 == 3'b000 & func7 == 7'b0000000)begin
+                                        alu_op<=5'b00010;
+                                        reg_write<=1;
+                                        alu_src<=1;
+                                    end
+                                    else if(func3 == 3'b000 & func7 == 7'b0100000)begin
+                                        alu_op<=5'b00011;
+                                        reg_write<=1;
+                                        alu_src<=1;
+                                    end
+                                    else if(func3 == 3'b111 & func7 == 7'b0000000)begin
+                                        alu_op<=5'b00101;
+                                        reg_write<=1;
+                                        alu_src<=1;
+                                    end
+                                    else if(func3 == 3'b110 && func7 == 7'b0000000)begin
+                                        alu_op<=5'b00100;
+                                        reg_write<=1;
+                                        alu_src<=1;
+                                    end
+                                    else if(func3 == 3'b100 & func7 == 7'b0000000)begin
+                                        alu_op<=5'b00110;
+                                        reg_write<=1;
+                                        alu_src<=1;
+                                    end
+                                    else if(func3 == 3'b101 & func7 == 7'b0100000)begin
+                                        alu_op<=5'b01001;
+                                        reg_write<=1;
+                                        alu_src<=1;
+                                    end
+                                    else if(func3 == 3'b101 & func7 == 7'b0000000)begin
+                                        alu_op<=5'b01000;
+                                        reg_write<=1;
+                                        alu_src<=1;
+                                    end
+                                    else if(func3 == 3'b001 & func7 == 7'b0000000)begin
+                                        alu_op<=5'b00111;
+                                        reg_write<=1;
+                                        alu_src<=1;
+                                    end
+                                    else if(func3 == 3'b011 & func7 == 7'b0000000)begin
+                                        alu_op<=5'b10101;
+                                        reg_write<=1;
+                                        alu_src<=1;
+                                    end
+                                    else if(func3 == 3'b010 & func7 == 7'b0000000)begin
+                                        alu_op<=5'b10100;
+                                        reg_write<=1;
+                                        alu_src<=1;
+                                    end
+                                    else if(func3 == 3'b000 & func7 == 7'b0000001)begin
+                                        alu_op<=5'b10001;
+                                        reg_write<=1;
+                                        alu_src<=1;
+                                    end
+                                    else if(func3 == 3'b100 & func7 == 7'b0000001)begin
+                                        alu_op<=5'b10010;
+                                        reg_write<=1;
+                                        alu_src<=1;
+                                    end
+                                    else if(func3 == 3'b110 & func7 == 7'b0000001)begin
+                                        alu_op<=5'b10011;
+                                        reg_write<=1;
+                                        alu_src<=1;
+                                    end
+                                end
+                                7'b0010011 : begin //i
+                                    reg_write<=1;
+                                    if(func3==3'b000)begin
+                                        alu_op<=5'b00001;
+                                    end
+                                    end
+                                    7'b0000011: begin  //lw
+                                    reg_write<=0;
+                                        mem_read<=1;
+                                        mem_write<=1;
+                                        mem_to_reg<=1;
+                                        alu_op<=5'b01100;
+                                    
+                                end
+                                7'b0100011 :  begin //s
+                                    alu_src<=1;
+                                    if(func3 == 3'b010)begin
+                                        mem_write<=1;
+                                        mem_read<=1;
+                                        alu_op<=01101;
+                                    end
+                                end
+                                7'b1100011 :  begin //b
+                                    if(func3 == 3'b000)begin
+                                        alu_op<=5'b01010;
+                                    end
+                                    else if(func3 == 3'b001)begin
+                                        alu_op<=5'b01011;
+                                    end
+                                end
+                                7'b0110111 : begin //u
+                                    
+                                end
+                                7'b1101111 : begin //j
+                                    reg_write<=1;
+                                    mem_read<=0;
+                                        mem_write<=0;
+                                        mem_to_reg<=0;
+                                    alu_op<=5'b01110;
+                                end
+                                default: begin
+                                reg_write <= 0;
+                                mem_read <= 0;
+                                mem_write <= 0;
+                                mem_to_reg <= 0;
+                                alu_src <= 0;
+                                alu_op <= 5'b00000;
+                                end
+                            endcase
+                        end
+                    end
+endmodule
+//module tb_control_unit;
+
+//    // Declare inputs as reg (since they are driven by the testbench)
+//    reg clk;
+//    reg rst;
+//    reg [6:0] opcode;
+//    reg [2:0] func3;
+//    reg [6:0] func7;
+
+//    // Declare outputs as wire (since they are driven by the module)
+//    wire reg_write;
+//    wire mem_read;
+//    wire mem_write;
+//    wire mem_to_reg;
+//    wire alu_src;
+//    wire [4:0] alu_op;
+
+//    // Instantiate the control_unit module
+//    control_unit uut (
+//        .clk(clk),
+//        .rst(rst),
+//        .opcode(opcode),
+//        .func3(func3),
+//        .func7(func7),
+//        .reg_write(reg_write),
+//        .mem_read(mem_read),
+//        .mem_write(mem_write),
+//        .mem_to_reg(mem_to_reg),
+//        .alu_src(alu_src),
+//        .alu_op(alu_op)
+//    );
+
+//    // Clock generation
+//    always #5 clk = ~clk; // 10ns period for clock
+
+//    // Stimulus block to apply test cases
+//    initial begin
+//        // Initialize inputs
+//        clk = 0;
+//        rst = 0;
+//        opcode = 7'b0000000;
+//        func3 = 3'b000;
+//        func7 = 7'b0000000;
+
+//        // Apply reset
+//        rst = 1; 
+//        #10 rst = 0; // Release reset after 10ns
+        
+//        // Test Case 1: R-type instruction (ADD)
+//        opcode = 7'b0110011;  // R-type opcode
+//        func3 = 3'b000;       // funct3 for ADD
+//        func7 = 7'b0000000;   // funct7 for ADD
+//        #10;  // Wait for one clock cycle
+//        $display("R-type ADD: reg_write=%b, alu_op=%b, alu_src=%b, mem_read=%b, mem_write=%b, mem_to_reg=%b", reg_write, alu_op, alu_src, mem_read, mem_write, mem_to_reg);
+
+//        // Test Case 2: I-type instruction (ADDI)
+//        opcode = 7'b0010011;  // I-type opcode
+//        func3 = 3'b000;       // funct3 for ADDI
+//        func7 = 7'b0000000;   // funct7 (not used in ADDI)
+//        #10;
+//        $display("I-type ADDI: reg_write=%b, alu_op=%b, alu_src=%b, mem_read=%b, mem_write=%b, mem_to_reg=%b", reg_write, alu_op, alu_src, mem_read, mem_write, mem_to_reg);
+
+//        // Test Case 3: S-type instruction (SW)
+//        opcode = 7'b0100011;  // S-type opcode
+//        func3 = 3'b010;       // funct3 for SW
+//        func7 = 7'b0000000;   // funct7 (not used in SW)
+//        #10;
+//        $display("S-type SW: reg_write=%b, alu_op=%b, alu_src=%b, mem_read=%b, mem_write=%b, mem_to_reg=%b", reg_write, alu_op, alu_src, mem_read, mem_write, mem_to_reg);
+
+//        // Test Case 4: B-type instruction (BEQ)
+//        opcode = 7'b1100011;  // B-type opcode
+//        func3 = 3'b000;       // funct3 for BEQ
+//        func7 = 7'b0000000;   // funct7 (not used in BEQ)
+//        #10;
+//        $display("B-type BEQ: reg_write=%b, alu_op=%b, alu_src=%b, mem_read=%b, mem_write=%b, mem_to_reg=%b", reg_write, alu_op, alu_src, mem_read, mem_write, mem_to_reg);
+
+//        // Test Case 5: J-type instruction (JAL)
+//        opcode = 7'b1101111;  // J-type opcode (JAL)
+//        func3 = 3'b000;       // funct3 (not used in JAL)
+//        func7 = 7'b0000000;   // funct7 (not used in JAL)
+//        #10;
+//        $display("J-type JAL: reg_write=%b, alu_op=%b, alu_src=%b, mem_read=%b, mem_write=%b, mem_to_reg=%b", reg_write, alu_op, alu_src, mem_read, mem_write, mem_to_reg);
+
+//        // Test Case 6: Default case
+//        opcode = 7'b1111111;  // Invalid opcode
+//        func3 = 3'b000;       // Default funct3
+//        func7 = 7'b0000000;   // Default funct7
+//        #10;
+//        $display("Invalid opcode: reg_write=%b, alu_op=%b, alu_src=%b, mem_read=%b, mem_write=%b, mem_to_reg=%b", reg_write, alu_op, alu_src, mem_read, mem_write, mem_to_reg);
+
+//        // End the simulation
+//        $finish;
+//    end
+
+//endmodule
+
