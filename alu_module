@@ -1,0 +1,200 @@
+`timescale 1ns / 1ps
+module alu_module(input logic clk,
+                  input logic rst,
+                  input logic [31:0] pc,
+                  input logic signed [4:0] op1,
+                  input logic signed [4:0] op2,
+                  input logic [4:0] alu_op,
+                  input logic alu_src,
+                  input logic signed [11:0] imm_i,
+                  input logic signed [11:0] imm_s,
+                  input logic signed [12:0] imm_b,
+                  input logic signed [19:0] imm_u,
+                  input logic signed [20:0] imm_j,
+                  output logic signed [4:0] result
+                   );
+                  always_comb begin
+                  if(alu_op==00000 && alu_src<=0)begin//zero
+                        result<=21'b0;
+                  end
+                  else if(alu_op==5'b00011&& alu_src==1)begin//subtract
+                        result<=op1-op2;
+                  end
+                  else if(alu_op==5'b00010&& alu_src==1)begin//add
+                        result<=op1+op2;
+                  end
+                  else if(alu_op==5'b00101&& alu_src==1)begin//and
+                        result<=op1&op2;
+                  end
+                  else if(alu_op==5'b00100&& alu_src==1)begin//or
+                        result<=op1|op2;
+                  end
+                  else if(alu_op==5'b00110&& alu_src==1)begin//xor
+                        result<=op1^op2;
+                  end
+                  else if(alu_op==5'b01001&& alu_src==1)begin//sra
+                        result<=op1>>>op2;
+                  end
+                  else if(alu_op==5'b01000&& alu_src==1)begin//srl
+                        result<=op1>>op2;
+                  end
+                  else if(alu_op==5'b00111&& alu_src==1)begin//sll
+                        result<=op1<<op2;
+                  end
+                  else if(alu_op==5'b10101&& alu_src==1)begin//sltu
+                        result<=(op1<op2)?5'b00001:5'b0;
+                  end
+                  else if(alu_op==5'b10100&& alu_src==1)begin//slt
+                        result<=(op1<op2)?5'b00001:5'b0;
+                  end
+                  else if(alu_op==5'b10001&& alu_src==1)begin//mul
+                        result<=op1*op2;
+                  end
+                  else if(alu_op==5'b10010&& alu_src==1)begin//div
+                        result<=(op1/op2);
+                  end
+                  else if(alu_op==5'b10011&& alu_src==1)begin//rem
+                        result<=(op1%op2);
+                  end
+                  else if(alu_op==5'b00001)begin//addi
+                        result<=op1+imm_i;
+                  end
+                  else if(alu_op==5'b01100&& alu_src==1)begin//lw
+                        result<=op1+$signed(imm_i);
+                  end
+                  else if(alu_op==5'b01101)begin//sw
+                        result<=op1+$signed(imm_s);
+                  end
+                  else if(alu_op==5'b01010)begin//beq
+                        result<=op1-op2;
+                  end
+                  else if(alu_op==5'b01011)begin//bne
+                        result<=op1-op2;
+                  end
+                  else if(alu_op==5'b01110)begin//jal
+                        result<=pc+imm_j;
+                  end
+                  
+                  end
+endmodule
+//module tb_alu_module;
+
+//    // Inputs
+//    logic clk;
+//    logic rst;
+//    logic [31:0] pc;
+//    logic signed [4:0] op1;
+//    logic signed [4:0] op2;
+//    logic [4:0] alu_op;
+//    logic alu_src;
+//    logic signed [11:0] imm_i;
+//    logic signed [11:0] imm_s;
+//    logic signed [12:0] imm_b;
+//    logic signed [19:0] imm_u;
+//    logic signed [20:0] imm_j;
+
+//    // Outputs
+//    logic signed [20:0] result;
+
+//    // Instantiate the ALU module
+//    alu_module uut (
+//        .clk(clk),
+//        .rst(rst),
+//        .pc(pc),
+//        .op1(op1),
+//        .op2(op2),
+//        .alu_op(alu_op),
+//        .alu_src(alu_src),
+//        .imm_i(imm_i),
+//        .imm_s(imm_s),
+//        .imm_b(imm_b),
+//        .imm_u(imm_u),
+//        .imm_j(imm_j),
+//        .result(result)
+//    );
+
+//    // Clock generation
+//    initial begin
+//        clk = 0;
+//        forever #5 clk = ~clk; // 10 ns clock period
+//    end
+
+//    // Testbench procedure
+//    initial begin
+//        // Initialize inputs
+//        rst = 1;
+//        op1 = 5'b00000;
+//        op2 = 5'b00000;
+//        alu_op = 5'b00000;
+//        alu_src = 0;
+//        imm_i = 12'b000000000000;
+//        imm_s = 12'b000000000000;
+//        imm_b = 13'b0000000000000;
+//        imm_u = 20'b00000000000000000000;
+//        imm_j = 21'b000000000000000000000;
+//        pc = 32'b0;
+        
+//        // Apply reset
+//        #10 rst = 0;
+
+//        // Test 1: Zero operation
+//        alu_op = 5'b00000; // Zero operation
+//        #10;
+         
+//        // Test 2: Add operation
+//        op1 = 5'd5;
+//        op2 = 5'd3;
+//        alu_op = 5'b00101; // And operation
+//        alu_src = 1;
+//        #10;
+         
+
+//        // Test 3: Subtract operation
+//        op1 = 5'd10;
+//        op2 = 5'd3;
+//        alu_op = 5'b00011; // Subtract operation
+//        alu_src = 1;
+//        #10;
+         
+//        // Test 4: AND operation
+//        alu_op = 5'b00010; // Add operation
+//        op1 = 5'b11111;
+//        op2 = 5'b10101;
+//        alu_src = 1;
+//        #10;
+         
+//        // Test 5: OR operation
+//        alu_op = 5'b00100;
+//        op1 = 5'b00010;
+//        op2 = 5'b01001; // OR operation
+//        #10;
+         
+//        // Test 6: XOR operation
+//        alu_op = 5'b00110; // XOR operation
+//        #10;
+         
+//        // Test 7: SRA operation
+//        alu_op = 5'b01001;
+//        op1=5'b00101;
+//        op2=5'd2; // SRA operation
+//        #10;
+         
+//        // Test 8: ADDI operation
+//        op1 = 5'd10;
+//        imm_i = 12'b000000000010; // immediate value 2
+//        alu_op = 5'b00001; // ADDI operation
+//        alu_src = 0;
+//        #10;
+         
+
+//        // Test 9: JAL operation
+//        pc = 32'd100; // Set a value for pc
+//        imm_j = 21'b000000000000000000001; // immediate value
+//        alu_op = 5'b01110; // JAL operation
+//        #10;
+         
+//        // End simulation
+//        $finish;
+//    end
+
+//endmodule
