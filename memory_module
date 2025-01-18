@@ -1,0 +1,114 @@
+`timescale 1ns / 1ps
+module register_file(   
+        input logic clk,
+        input logic rst, 
+        input logic signed [4:0] op1,
+        input logic signed [4:0] op2,  
+        input logic [4:0] rs1,
+        input logic [4:0] rs2,
+        input logic [4:0] rd,
+        input logic signed [4:0] wr_data,
+        input logic regwrite,
+        output logic [4:0] register [31:0],
+        output logic signed [4:0] read_data1,
+        output logic signed [4:0] read_data2
+    );
+       // always_ff @(posedge clk)begin
+            always_comb begin
+            if(rst)begin
+               for(int i=0;i<32;i=i+1)begin
+                    register[i]<=0;
+               end 
+               end
+               end
+               always_comb begin
+               if(regwrite==1)begin
+                       register[rs1]<=op1;
+                       register[rs2]<=op2; 
+                       register[rd]<=wr_data;
+               end
+            end
+            
+            always_comb begin
+                read_data1=(rs1==5'b0)?4'b0:register[rs1];
+                read_data2=(rs2==5'b0)?4'b0:register[rs2];
+            end
+endmodule
+//module register_file_tb;
+
+//    // Inputs
+//    logic clk;
+//    logic rst;
+//    logic [4:0] rs1;
+//    logic [4:0] rs2;
+//    logic [4:0] rd;
+//    logic [31:0] wr_data;
+//    logic regwrite;
+
+//    // Outputs
+//    logic [31:0] read_data1;
+//    logic [31:0] read_data2;
+
+//    // Instantiate the Unit Under Test (UUT)
+//    register_file uut (
+//        .clk(clk),
+//        .rst(rst),
+//        .rs1(rs1),
+//        .rs2(rs2),
+//        .rd(rd),
+//        .wr_data(wr_data),
+//        .regwrite(regwrite),
+//        .read_data1(read_data1),
+//        .read_data2(read_data2)
+//    );
+
+//    // Clock generation
+//    initial begin
+//        clk = 0;
+//        forever #5 clk = ~clk; // 10 ns clock period
+//    end
+
+//    // Test sequence
+//    initial begin
+//        // Initialize inputs
+//        rst = 1;
+//        rs1 = 5'd0;
+//        rs2 = 5'd0;
+//        rd = 5'd0;
+//        wr_data = 32'd0;
+//        regwrite = 0;
+
+//        // Apply reset
+//        #10 rst = 0;
+
+//        // Write data to register 5
+//        rd = 5'd5;
+//        wr_data = 32'h12345678;
+//        regwrite = 1;
+//        #10;
+
+//        // Disable write and read from register 5
+//        regwrite = 0;
+//        rs1 = 5'd5;
+//        rs2 = 5'd5;
+//        #10;
+
+//        // Write data to register 10 and read simultaneously
+//        rd = 5'd10;
+//        wr_data = 32'h87654321;
+//        regwrite = 1;
+//        rs1 = 5'd10;
+//        rs2 = 5'd5;
+//        #10;
+
+//        // Check reading x0 (always 0)
+//        regwrite = 0;
+//        rs1 = 5'd0;
+//        rs2 = 5'd0;
+//        #10;
+
+//        // Finish simulation
+//        $finish;
+//    end
+//endmodule
+
