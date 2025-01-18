@@ -1,0 +1,97 @@
+`timescale 1ns / 1ps
+module instruction_fetch(
+    input logic clk,
+    input logic rst,
+    input logic [31:0] pc,
+    output logic [31:0] instruction,
+    output logic [31:0] pc_next
+);
+    logic [31:0] memory [255:0];
+
+    initial begin
+        memory[0] = 32'h0000006f; // Example: JAL x1, label (Jump and Link)
+        memory[1] = 32'h00100113;  // Example: ADDI x2, x0, 1
+        memory[2] = 32'h002081b3;  // Example: ADD x3, x1, x2
+        memory[3] = 32'h402081b3;  // Example: SUB x3, x1, x2
+        memory[4] = 32'h0062f233;  // Example: AND x4, x5, x6
+        memory[5] = 32'h009441b3;  // Example: //XOR x7, x8, x9
+        memory[6] = 32'h00c5a433;  // Example: XOR x10, x11, x12
+        memory[7] = 32'h002091b3;  // Example: SLL x3, x1, x2 (Shift Left Logical)
+        memory[8] = 32'b00000000011000101101001110110011;  // Example: SRL x3, x1, x2 (Shift Right Logical)
+        memory[9] = 32'b01000000011000101101001110110011;  // Example: SRA x3, x1, x2 (Shift Right Arithmetic)
+        memory[10] = 32'h00C28063; // Example: BEQ x1, x2, label (Branch if Equal)
+        memory[11] = 32'b0000000011000101001000001100011; // Example: BNE x1, x2, label (Branch if Not Equal)
+        memory[12] = 32'h00410303; // Example: LW x3, 4(x2) (Load Word)
+        memory[13] = 32'h00312023; // Example: SW x3, 4(x2) (Store Word)  
+        memory[14] = 32'h00000000; // zero
+        memory[15] = 32'h00000000; //zero
+        memory[16] = 32'h00000000; //zero
+        memory[17] = 32'b00000010011100101000000110110011; // Example: MUL x3, x1, x2 (Multiply)
+        memory[18] = 32'b00000010011100101100000110110011;// Example: DIV x3, x1, x2 (Divide)
+        memory[19] = 32'b00000010011100101110000110110011; // Example: REM x3, x1, x2 (Remainder)
+        memory[20] = 32'h00a0a1b3; // Example: SLT x3, x1, x2 (Set Less Than)
+        memory[21] = 32'h00b0b1b3; // Example: SLTU x3, x1, x2 (Set Less Than Unsigned)
+
+        for (int i = 22; i <= 255; i=i+1) begin
+            memory[i] <= 32'h00000000;
+        end
+    end
+        always_comb begin
+        if (rst) begin
+            instruction <= 32'h00000000;
+            pc_next <= 32'h00000000;
+        end 
+        else begin
+            instruction <= memory[pc[9:2]];
+            pc_next <= pc + 4;
+        end
+    end
+endmodule
+//module tb_instruction_fetch();
+//    logic clk;
+//    logic rst;
+//    logic [31:0] pc;
+//    logic [31:0] instruction;
+//    logic [31:0] pc_next;
+//    instruction_fetch dut (
+//        .clk(clk),
+//        .rst(rst),
+//        .pc(pc),
+//        .instruction(instruction),
+//        .pc_next(pc_next)
+//    );
+//    initial begin
+//        clk = 0;
+//        forever #5 clk = ~clk;  
+//    end
+
+//    // Test procedure
+//    initial begin
+//        // Initialize inputs
+//        rst = 1;
+//        pc = 0;
+
+//        // Reset the system
+//        #10; // Wait for one clock cycle
+//        rst = 0;
+
+//        // Provide test PC values
+//        #10 pc = 32'h00000000; // PC = 0
+//        #10 pc = 32'h00000004; // PC = 4
+//        #10 pc = 32'h00000008; // PC = 8
+//        #10 pc = 32'h0000000C; // PC = 12
+//        #10 pc = 32'h00000010; // PC = 16
+//        #10 pc = 32'h00000014; // PC = 20
+//        #10 pc = 32'h00000021; // PC = 256
+
+//        // Reset the system again
+//        #10 rst = 1;
+//        #10 rst = 0;
+
+//        // Test out-of-bound PC (should result in 0x00000000 as instruction)
+//        #10 pc = 32'h00000400;
+
+//        // End simulation
+//        #50 $finish;
+//    end
+//endmodule
