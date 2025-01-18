@@ -1,0 +1,198 @@
+`timescale 1ns / 1ps
+module instruction_decode(input logic clk,
+                          input logic rst,
+                          input logic [31:0] instruction,
+                          output logic [6:0] opcode,
+                          output logic [4:0] rd,
+                          output logic [4:0] rs1,
+                          output logic [4:0] rs2,
+                          output logic [2:0] func3,
+                          output logic [6:0] func7,
+                          output logic [11:0] imm_i,
+                          output logic [11:0] imm_s,
+                          output logic [12:0] imm_b,
+                          output logic [19:0] imm_u,
+                          output logic [20:0] imm_j
+    );
+    
+    
+assign opcode = instruction[6:0];
+    always_comb begin
+    //always_ff @(posedge clk) begin
+            if(rst) begin
+                 imm_s<=0;
+                imm_b<=0;
+                imm_u<=0;
+                imm_j<=0;
+                imm_i<=0;
+                
+            rd <= 5'b0;
+            rs1 <= 5'b0;
+            rs2 <= 5'b0;
+            func3 <= 3'b0;
+            func7 <= 7'b0;
+            end
+                else begin
+        case (opcode)
+        7'b0110011: begin
+            rd <= instruction[11:7];
+            rs1 <= instruction[19:15];
+            rs2 <= instruction[24:20];
+            func3 <= instruction[14:12];
+            func7 <= instruction[31:25];
+             imm_i<=12'bx;
+    imm_s<=12'bx;
+    imm_b<=13'bx;
+    imm_u<=20'bx;
+    imm_j<=21'bx;
+        end
+        7'b0010011 : begin
+            imm_i<=instruction[31:20];
+             rd <= instruction[11:7];
+             func3 <= instruction[14:12];
+             rs1 <= instruction[19:15];
+             rs2<=5'bx;
+             func7<=7'bx; 
+    imm_s<=12'bx;
+    imm_b<=13'bx;
+    imm_u<=20'bx;
+    imm_j<=21'bx;
+             
+        end
+        7'b0100011 : begin
+            imm_s<={instruction[31:25],instruction[11:7]};
+            rs1 <= instruction[19:15];
+            rs2 <= instruction[24:20];
+            func3 <= instruction[14:12];
+            rd<=5'bx;
+            func7<=7'bx;
+             imm_i<=12'bx;
+    imm_b<=13'bx;
+    imm_u<=20'bx;
+    imm_j<=21'bx;
+        end
+        7'b1100011 : begin
+        rs1 <= instruction[19:15];
+            rs2 <= instruction[24:20];
+            func3 <= instruction[14:12];
+        func7<=7'bx;
+         imm_i<=12'bx;
+    imm_s<=12'bx;
+    imm_u<=20'bx;
+    imm_j<=21'bx;
+            imm_b<={instruction[31], instruction[7],instruction[30:25], instruction[11:8]};
+        end
+        7'b0110111 : begin
+            imm_u<=instruction[31:12];
+            rd <= instruction[11:7];
+            rs1<=5'bx;
+        rs2<=5'bx;
+        func3<=3'bx;
+        func7<=7'bx;
+         imm_i<=12'bx;
+    imm_s<=12'bx;
+    imm_b<=13'bx;
+    imm_j<=21'bx;
+        end
+        7'b1101111 : begin
+        rd<=instruction[11:7];
+        rs1<=5'bx;
+        rs2<=5'bx;
+        func3<=3'bx;
+        func7<=7'bx;
+            imm_j<={instruction[31],  instruction[19:12],instruction[20],instruction[30:21]};
+             imm_i<=12'bx;
+    imm_s<=12'bx;
+    imm_b<=13'bx;
+    imm_u<=20'bx;
+        end
+        default: begin imm_i<=0;
+                imm_s<=0;
+                imm_b<=0;
+                imm_u<=0;
+                imm_j<=0;
+                end
+        endcase
+        end
+    end
+endmodule
+//module tb_instruction_decode();
+
+//    // Inputs
+//    logic clk;
+//    logic rst;
+//    logic [31:0] instruction;
+
+//    // Outputs
+//    logic [6:0] opcode;
+//    logic [4:0] rd;
+//    logic [4:0] rs1;
+//    logic [4:0] rs2;
+//    logic [2:0] func3;
+//    logic [6:0] func7;
+//    logic [11:0] imm_i;
+//    logic [11:0] imm_s;
+//    logic [12:0] imm_b;
+//    logic [19:0] imm_u;
+//    logic [20:0] imm_j;
+
+     
+//    instruction_decode uut (
+//        .clk(clk),
+//        .rst(rst),
+//        .instruction(instruction),
+//        .opcode(opcode),
+//        .rd(rd),
+//        .rs1(rs1),
+//        .rs2(rs2),
+//        .func3(func3),
+//        .func7(func7),
+//        .imm_i(imm_i),
+//        .imm_s(imm_s),
+//        .imm_b(imm_b),
+//        .imm_u(imm_u),
+//        .imm_j(imm_j)
+//    );
+
+//    // Clock generation
+//    initial begin
+//        clk = 0;
+//        forever #5 clk = ~clk; // 10 ns clock period
+//    end
+
+//    // Testbench procedure
+//    initial begin
+//        // Initialize inputs
+//        rst = 1;
+//        instruction = 32'b0;
+
+//        // Apply reset
+//        #10 rst = 0;
+
+//        // Test I-type instruction (e.g., ADDI x1, x0, 4)
+//        instruction = 32'b00000000010000000000000010010011; // ADDI
+//        #10;
+
+//        // Test S-type instruction (e.g., SW x2, 4(x3))
+//        instruction = 32'b00000000010000110010000000100011; // SW
+//        #10;
+
+//        // Test B-type instruction (e.g., BEQ x1, x2, 8)
+//        instruction = 32'b00000000001000001000000001100011; // BEQ
+//        #10;
+
+//        // Test U-type instruction (e.g., LUI x1, 0x12345)
+//        instruction = 32'b00000001000100101000000010110111; // LUI
+//        #10;
+
+//        // Test J-type instruction (e.g., JAL x1, 0x12345)
+//        instruction = 32'b00000001000100101000000011101111; // JAL
+//        #10;
+
+//        // End simulation
+//        $finish;
+//    end
+     
+
+//endmodule
+
