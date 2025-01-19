@@ -1,0 +1,293 @@
+`timescale 1ns / 1ps
+module top_module(
+    input logic clk,
+    input logic rst,
+    input logic [31:0] pc,
+    input logic [4:0] op1,
+    input logic [4:0] op2,
+    output logic [4:0] rs1,
+    output logic [4:0] rs2,
+    output logic  [4:0] rd,
+    output logic [31:0] pc_next,
+    output logic [4:0] result,
+    output logic [31:0] instruction,
+    output logic [6:0] opcode,
+    output logic [2:0] func3,
+    output logic [6:0] func7,
+    output logic [11:0] imm_i,
+    output logic [11:0] imm_s,
+    output logic [12:0] imm_b,
+    output logic [19:0] imm_u,
+    output logic [20:0] imm_j,
+    output logic alu_src,
+    output logic [4:0] alu_op,
+    output logic reg_write,
+    output logic mem_read,
+    output logic mem_write,
+    output logic mem_to_reg,
+    output logic [4:0] wr_data,
+    output logic [4:0] read_data1,
+    output logic [4:0] read_data2,
+    output logic [4:0] write_data,
+    output logic [4:0] read_data,
+    output logic [4:0] register [31:0],
+    output logic [4:0] memory [31:0]
+);
+    instruction_fetch IF(
+        .clk(clk),
+        .rst(rst),
+        .pc(pc),
+        .instruction(instruction),
+        .pc_next(pc_next)
+    );
+
+    instruction_decode ID(
+        .clk(clk),
+        .rst(rst),
+        .instruction(instruction),
+        .opcode(opcode),
+        .rd(rd),
+        .rs1(rs1),
+        .rs2(rs2),
+        .func3(func3),
+        .func7(func7),
+        .imm_i(imm_i),
+        .imm_s(imm_s),
+        .imm_b(imm_b),
+        .imm_u(imm_u),
+        .imm_j(imm_j)
+    );
+
+    alu_module AU(
+        .clk(clk),
+        .rst(rst),
+        .pc(pc),
+        .op1(read_data1),
+        .op2(read_data2),
+        .alu_op(alu_op),
+        .alu_src(alu_src),
+        .imm_i(imm_i),
+        .imm_s(imm_s),
+        .imm_b(imm_b),
+        .imm_u(imm_u),
+        .imm_j(imm_j),
+        .result(result)
+    );
+
+    control_unit CU(
+        .clk(clk),
+        .rst(rst),
+        .opcode(opcode),
+        .func3(func3),
+        .func7(func7),
+        .reg_write(reg_write),
+        .mem_read(mem_read),
+        .mem_write(mem_write),
+        .mem_to_reg(mem_to_reg),
+        .alu_src(alu_src),
+        .alu_op(alu_op)
+    );
+
+    register_file RF(
+        .clk(clk),
+        .rst(rst),
+        .op1(op1),
+        .op2(op2),
+        .rs1(rs1),
+        .rs2(rs2),
+        .rd(rd),
+        .register(register),
+        .wr_data(result),
+        .regwrite(reg_write),
+        .read_data1(read_data1),
+        .read_data2(read_data2)
+    );
+
+    memory_unit mem_unit(
+        .rst(rst),
+        .clk(clk),
+        .mem_read(mem_read),
+        .mem_write(mem_write),
+        .pc(pc),
+        .write_data(result),
+        .read_data(read_data),
+        .memory(memory) 
+    );
+    assign wr_data = result;       // ALU result to write-back data
+assign write_data = result;    // ALU result to memory's write_data
+endmodule
+`timescale 1ns / 1ps
+ 
+
+module top_module_tb;
+    // Inputs
+    logic clk;
+    logic rst;
+    logic [31:0] pc;
+    logic [4:0] op1;
+    logic [4:0] op2;
+
+    // Outputs
+    logic [31:0] pc_next;
+    logic [4:0] result;
+    logic [4:0] rs1, rs2;
+    logic [4:0] rd;
+    logic [31:0] instruction;
+    logic [6:0] opcode;
+    logic [2:0] func3;
+    logic [6:0] func7;
+    logic [11:0] imm_i;
+    logic [11:0] imm_s;
+    logic [12:0] imm_b;
+    logic [19:0] imm_u;
+    logic [20:0] imm_j;
+    logic alu_src;
+    logic [4:0] alu_op;
+    logic reg_write;
+    logic mem_read;
+    logic mem_write;
+    logic mem_to_reg;
+    logic [4:0] wr_data;
+    logic [4:0] read_data1, read_data2;
+    logic [4:0] write_data;
+    logic [4:0] read_data;
+    logic [4:0] register [31:0];
+     logic [4:0] memory [31:0];
+    // Instantiate the Unit Under Test (UUT)
+    top_module uut (
+        .clk(clk),
+        .rst(rst),
+        .pc(pc),
+        .op1(op1),
+        .op2(op2),
+        .pc_next(pc_next),
+        .result(result),
+        .rs1(rs1),
+        .rs2(rs2),
+        .rd(rd),
+        .instruction(instruction),
+        .opcode(opcode),
+        .func3(func3),
+        .func7(func7),
+        .imm_i(imm_i),
+        .imm_s(imm_s),
+        .imm_b(imm_b),
+        .imm_u(imm_u),
+        .imm_j(imm_j),
+        .alu_src(alu_src),
+        .alu_op(alu_op),
+        .reg_write(reg_write),
+        .mem_read(mem_read),
+        .mem_write(mem_write),
+        .mem_to_reg(mem_to_reg),
+        .wr_data(wr_data),
+        .read_data1(read_data1),
+        .read_data2(read_data2),
+        .write_data(write_data),
+        .read_data(read_data),
+        .register(register),
+        .memory(memory)
+    );
+
+    // Clock generation
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk; // 10 ns clock period
+    end
+
+    // Test sequence
+    initial begin
+        // Initialize inputs
+        rst = 0;
+        pc = 32'h00000000;  // Initial PC address
+        op1 = 32'h00000005; // Operand 1
+        op2 = 32'h00000003; // Operand 2
+
+        // Test 1: Reset the system
+        #10;
+        rst = 1;  // Assert reset
+        #10;
+        rst = 0;  // Deassert reset
+
+        // Test 2: Fetch instruction and observe outputs
+        #10;
+        pc = 32'h00000004;  // Update PC
+        op1 = 32'h00000001; // Operand 1
+        op2 = 32'h00000001; // Operand 2
+        
+        #10;
+        $display("Test 2: PC = 0x%08h, Instruction = 0x%08h, Opcode = 0x%02h", pc, instruction, opcode);
+
+        // Test 3: Decode and check register outputs
+        #10;
+        pc = 32'h00000008; // Update PC
+                op1 = 32'h00000001; // Operand 1
+        op2 = 32'h00000001; // Operand 2
+
+        #10;
+        $display("Test 3: rs1 = %d, rs2 = %d, rd = %d, Func3 = 0x%01h, Func7 = 0x%02h", 
+                 rs1, rs2, rd, func3, func7);
+
+        // Test 4: Immediate generation and ALU operations
+        #10;
+        pc = 32'h0000000C;
+        #10;
+        $display("Test 4: imm_i = 0x%03h, imm_s = 0x%03h, imm_b = 0x%03h, imm_u = 0x%05h, imm_j = 0x%05h", 
+                 imm_i, imm_s, imm_b, imm_u, imm_j);
+
+        // Test 5: ALU results and memory access
+        #10;
+        pc = 32'h00000010;
+        #10;
+        $display("Test 5: ALU Result = 0x%08h, Read Data = 0x%08h, Write Data = 0x%08h", 
+                 result, read_data, write_data);
+                 #10;
+        pc = 32'd20;
+        #10;
+        pc = 32'd24;
+        #10;
+        pc = 32'd28;
+        #10;
+        pc = 32'd32;
+        #10;
+        pc = 32'd36;
+        #10;
+        pc = 32'd40;
+        #10;
+        pc = 32'd44;
+        #10;
+        pc = 32'd48;
+        #10;
+        pc = 32'd52;
+        #10;
+        pc = 32'd56;
+        #10;
+        pc = 32'd60;
+        #10;
+        pc = 32'd64;
+        #10;
+        pc = 32'd68;
+        #10;
+        pc = 32'd72;
+        #10;
+        pc = 32'd76;
+        #10;
+        pc = 32'd80;
+        #10;
+        
+        
+        
+
+
+        // Additional Tests: Memory and control signal verification
+        
+        $display("Control Unit Signals: RegWrite = %b, MemRead = %b, MemWrite = %b, MemToReg = %b, ALUSrc = %b", 
+                 reg_write, mem_read, mem_write, mem_to_reg, alu_src);
+
+        // Finish simulation
+        #20;
+        $finish;
+    end
+endmodule
+
+
